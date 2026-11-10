@@ -33,3 +33,9 @@ for index, quiz in enumerate(questions, start=1):
 
 print("===== Quiz Finished =====")
 print(f"Your final score is {score}/{len(questions)}")
+if score == len(questions):
+    print("Excellent! Perfect score!")
+elif score >= len(questions) // 2:
+    print("Good job! Keep practicing!")
+else:
+    print("Keep studying and try again!")
