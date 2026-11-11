@@ -23,3 +23,8 @@ python main.py
 - feature 브랜치에서 README를 수정했습니다.
 - main 브랜치로 merge 실습을 진행했습니다.
 - clone과 pull 실습을 진행할 예정입니다.
+
+## Git clone 실습
+
+- 별도 폴더에서 git clone을 수행했습니다.
+- clone 저장소에서 README를 수정하고 push했습니다.
