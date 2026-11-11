@@ -17,3 +17,9 @@ Python으로 만든 콘솔 기반 퀴즈 게임입니다.
 
 ```bash
 python main.py
+## 제출 전 최종 점검
+
+- Git 브랜치 생성 및 checkout 실습을 진행했습니다.
+- feature 브랜치에서 README를 수정했습니다.
+- main 브랜치로 merge 실습을 진행했습니다.
+- clone과 pull 실습을 진행할 예정입니다.
