@@ -1,4 +1,6 @@
-﻿class Quiz:
+﻿import json
+DATA_FILE = "quizzes.json"
+class Quiz:
     def __init__(self, question, choices, answer):
         self.question = question
         self.choices = choices
@@ -47,7 +49,7 @@ def get_default_quizzes():
             2
         ),
         Quiz(
-            "JSON 파일에서 주로 사용하는 데이터 구조와 가까운 것은?",
+            "json 파일에서 주로 사용하는 데이터 구조와 가까운 것은?",
             ["딕셔너리", "반복문", "함수", "클래스"],
             1
         ),
@@ -58,7 +60,32 @@ def get_default_quizzes():
         )
     ]
 
+def save_quizzes(quizzes, filename=DATA_FILE):
+    quiz_dicts = []
 
+    for quiz in quizzes:
+        quiz_dicts.append(quiz.to_dict())
+
+    with open(filename, "w", encoding="utf-8") as file:
+        json.dump(quiz_dicts, file, ensure_ascii=False, indent=4)
+
+
+def load_quizzes(filename=DATA_FILE):
+    try:
+        with open(filename, "r", encoding="utf-8") as file:
+            quiz_dicts = json.load(file)
+
+        quizzes = []
+
+        for quiz_dict in quiz_dicts:
+            quizzes.append(Quiz.from_dict(quiz_dict))
+
+        return quizzes
+
+    except FileNotFoundError:
+        quizzes = get_default_quizzes()
+        save_quizzes(quizzes, filename)
+        return quizzes
 def input_number(message, min_value, max_value):
     while True:
         user_input = input(message).strip()
@@ -114,8 +141,8 @@ class QuizGame:
             print("Keep practicing!")
 
 def main():
-    quizzes = get_default_quizzes()
+    quizzes = load_quizzes()
     game = QuizGame(quizzes)
     game.run()
-    
+
 main()
