@@ -79,35 +79,43 @@ def input_number(message, min_value, max_value):
         except ValueError:
             print("숫자를 입력하세요.")
 
+class QuizGame:
+    def __init__(self, quizzes):
+        self.quizzes = quizzes
+        self.score = 0
+
+    def run(self):
+        print("===== Quiz Game =====")
+
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print(f"\nQuestion {index}")
+            quiz.display()
+
+            user_answer = input_number("Answer: ", 1, 4)
+
+            if quiz.check_answer(user_answer):
+                print("Correct!")
+                self.score += 1
+            else:
+                print(f"Wrong. The correct answer is {quiz.answer}.")
+
+        self.show_result()
+
+    def show_result(self):
+        print()
+        print("===== Quiz Finished =====")
+        print(f"Your final score is {self.score}/{len(self.quizzes)}")
+
+        if self.score == len(self.quizzes):
+            print("Excellent! Perfect score!")
+        elif self.score >= len(self.quizzes) // 2:
+            print("Good job!")
+        else:
+            print("Keep practicing!")
 
 def main():
     quizzes = get_default_quizzes()
-    score = 0
-
-    print("===== Quiz Game =====")
-
-    for index, quiz in enumerate(quizzes, start=1):
-        print(f"\nQuestion {index}")
-        quiz.display()
-
-        user_answer = input_number("Answer: ", 1, 4)
-
-        if quiz.check_answer(user_answer):
-            print("Correct!")
-            score += 1
-        else:
-            print(f"Wrong. The correct answer is {quiz.answer}.")
-
-    print()
-    print("===== Quiz Finished =====")
-    print(f"Your final score is {score}/{len(quizzes)}")
-
-    if score == len(quizzes):
-        print("Excellent! Perfect score!")
-    elif score >= len(quizzes) // 2:
-        print("Good job!")
-    else:
-        print("Keep practicing!")
-
-
+    game = QuizGame(quizzes)
+    game.run()
+    
 main()
