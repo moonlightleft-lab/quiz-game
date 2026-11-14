@@ -1,8 +1,18 @@
-﻿import json
+﻿import signal
+import json
 
 DATA_FILE = "state.json"
 
+def handle_shutdown_signal(signum, frame):
+    """
+    OS 종료 시그널을 받았을 때 안전하게 종료하기 위한 핸들러입니다.
+    SIGINT, SIGTERM을 KeyboardInterrupt로 변환하여
+    기존 예외 처리 로직에서 데이터를 저장하도록 합니다.
+    """
+    raise KeyboardInterrupt
 
+# 역할: 질문, 보기, 정답 데이터를 저장하는 클래스
+# 책임: 퀴즈 데이터 관리
 class Quiz:
     def __init__(self, question, choices, answer):
         self.question = question
@@ -130,7 +140,8 @@ def input_number(message, min_value, max_value):
             print("\n입력이 중단되었습니다.")
             return None
 
-
+# 역할: 퀴즈 게임의 진행 흐름을 관리하는 클래스
+# 책임: 사용자 입력, 정답 판정, 점수 계산, 결과 출력
 class QuizGame:
     def __init__(self, quizzes, best_score):
         self.quizzes = quizzes
@@ -149,27 +160,35 @@ class QuizGame:
         print("=" * 40)
 
     def run(self):
-        while True:
-            self.show_menu()
-            choice = input_number("선택: ", 1, 5)
+        signal.signal(signal.SIGINT, handle_shutdown_signal)
+        signal.signal(signal.SIGTERM, handle_shutdown_signal)
 
-            if choice is None:
-                self.save()
-                print("프로그램을 안전하게 종료합니다.")
-                break
+        try:
+            while True:
+                self.show_menu()
+                choice = input_number("선택: ", 1, 5)
 
-            if choice == 1:
-                self.play_quiz()
-            elif choice == 2:
-                self.add_quiz()
-            elif choice == 3:
-                self.show_quiz_list()
-            elif choice == 4:
-                self.show_score()
-            elif choice == 5:
-                self.save()
-                print("프로그램을 종료합니다.")
-                break
+                if choice is None:
+                    self.save()
+                    print("프로그램을 안전하게 종료합니다.")
+                    break
+
+                if choice == 1:
+                    self.play_quiz()
+                elif choice == 2:
+                    self.add_quiz()
+                elif choice == 3:
+                    self.show_quiz_list()
+                elif choice == 4:
+                    self.show_score()
+                elif choice == 5:
+                    self.save()
+                    print("프로그램을 종료합니다.")
+                    break
+
+        except (KeyboardInterrupt, EOFError):
+            self.save()
+            print("\n종료 신호를 받아 데이터를 저장하고 종료합니다.")
 
     def play_quiz(self):
         if len(self.quizzes) == 0:
