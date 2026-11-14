@@ -1,0 +1,14 @@
+[33m878ddf2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Docs: clone 실습 기록 추가
+[33mad421cc[m Merge: docs/final-check 브랜치 병합
+[33mb296486[m[33m ([m[1;31morigin/docs/final-check[m[33m)[m Docs: 제출 전 최종 점검 내용 추가
+[33mabc4c3c[m[33m ([m[1;33mtag: [m[1;33mv1.0[m[33m)[m Remove: 사용하지 않는 quizzes.json 삭제
+[33m6a47ead[m Docs: README 추가
+[33m5c7ad69[m Add: 퀴즈 상태 저장 파일 추가
+[33ma07ec5d[m Feat: 메뉴와 상태 저장 기능 추가
+[33mfccfd42[m Add quizzes JSON data file
+[33m64d4abc[m Fix: json 모듈 import 오류 수정
+[33me465b62[m Feat: AuizGame 클래스 추가
+[33m0a01eb6[m Feat: Quiz 클래스 기반 구조로 변경
+[33m7e0b46f[m Add score feedback messages
+[33m189af65[m Improve quiz game with list and loop
+[33m3f0ad6a[m Initial commit
