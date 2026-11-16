@@ -15,6 +15,14 @@ python main.py
 ## Git clone 실습
 - 별도 폴더에서 git clone을 수행했습니다.
 - clone 저장소에서 README를 수정하고 push했습니다.
+## clone/pull 실행 증빙
+- 별도 폴더에서 `git clone`을 수행했습니다.
+- 원격 저장소의 변경 사항을 `git pull origin main`으로 가져왔습니다.
+- 아래는 clone/pull 실행 터미널 스크린샷입니다.
+## git clone 실행 스크린샷
+![git clone 실행 터미널 스크린샷](./evidence-git-clone.png)
+## git pull 실행 스크린샷
+![git pull 실행 터미널 스크린샷](./evidence-git-pull.png)
 
 
 
@@ -137,7 +145,7 @@ Pagination (페이지네이션): 관리자 화면 등에서 목록을 보여줄 
 
 
 
-  # GitHub 저장소 및 커밋 증빙
+# GitHub 저장소 및 커밋 증빙
 ## 원격 저장소 주소
 본 프로젝트는 GitHub 원격 저장소와 연결하여 clone, commit, push 실습을 수행했습니다.
 - 원격 저장소: https://github.com/moonlightleft-lab/quiz-game
