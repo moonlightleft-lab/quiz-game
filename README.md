@@ -134,3 +134,48 @@ Pagination (페이지네이션): 관리자 화면 등에서 목록을 보여줄 
   - 자주 조회되는 랭킹 데이터나 설정값은 메모리에 캐싱하여 디스크 접근 횟수를 최소화합니다.
 - **비동기 저장(Asynchronous I/O):**
   - 게임 진행에 방해가 되지 않도록 저장 로직을 별도 스레드에서 비동기적으로 처리합니다.
+
+
+
+  # GitHub 저장소 및 커밋 증빙
+## 원격 저장소 주소
+본 프로젝트는 GitHub 원격 저장소와 연결하여 clone, commit, push 실습을 수행했습니다.
+- 원격 저장소: https://github.com/moonlightleft-lab/quiz-game
+## 원격 저장소 확인 명령어
+```bash
+git remote -v
+```
+실행 결과:
+```bash
+origin  https://github.com/moonlightleft-lab/quiz-game.git (fetch)
+origin  https://github.com/moonlightleft-lab/quiz-game.git (push)
+```
+## 커밋 수 확인
+```bash
+git rev-list --count HEAD
+```
+실행 결과:
+```bash
+29
+```
+전체 커밋 수가 10개 이상임을 확인했습니다.
+## git log 증빙
+```bash
+git log --oneline -10
+```
+실행 결과:
+```bash
+3da59cd (HEAD -> main, origin/main) 전체코드수정
+60fd45a (origin/practice, practice) Docs: 대량 데이터 최적화 전략 내용 추가
+1bd59c0 Feat: JSON 저장 및 백업 복구 기능 구현
+d5e8f2f 대량 데이터 처리 및 최적화 전략
+111c92d docs: state.json 사용 명시 및 JSON채택 근거 추가
+a92a128 docs: 클래스 설계 근거 추가
+0f7c7d1 평가 핸들링 추가 및 README수정
+d39759b Merge branch 'main' of https://github.com/moonlightleft-lab/quiz-game
+ed508ee Delete unnecessary screenshot
+ffd25cd Add files via upload
+```
+## GitHub 커밋 화면
+GitHub 저장소의 Commits 화면에서도 커밋 이력을 확인할 수 있습니다.
+- 커밋 내역 화면: https://github.com/moonlightleft-lab/quiz-game/commits/main
