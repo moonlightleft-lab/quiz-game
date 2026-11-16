@@ -1,9 +1,12 @@
-﻿import json
+﻿import signal
+import json
 import shutil
 import os
+import copy
 
 DB_FILE = 'state.json'
 BACKUP_FILE = 'state.json.bak'
+TEMP_FILE = 'state.json.tmp'
 
 
 # 기본 퀴즈 데이터
@@ -70,7 +73,7 @@ def make_default_state():
     state.json이 없거나 손상되었을 때 사용할 기본 데이터
     """
     return {
-        "quizzes": DEFAULT_QUIZZES.copy(),
+        "quizzes": copy.deepcopy(DEFAULT_QUIZZES),
         "best_score": 0
     }
 
@@ -90,7 +93,7 @@ def add_default_quizzes_if_needed(valid_quizzes):
             break
 
         if default_quiz["question"] not in existing_questions:
-            valid_quizzes.append(default_quiz)
+            valid_quizzes.append(copy.deepcopy(default_quiz))
             existing_questions.append(default_quiz["question"])
 
     return valid_quizzes
@@ -108,7 +111,7 @@ def normalize_state(data):
 
     # 퀴즈 목록 검증
     if not isinstance(loaded_quizzes, list):
-        loaded_quizzes = DEFAULT_QUIZZES
+        loaded_quizzes = copy.deepcopy(DEFAULT_QUIZZES)
 
     valid_quizzes = []
 
@@ -130,10 +133,10 @@ def normalize_state(data):
     valid_quizzes = add_default_quizzes_if_needed(valid_quizzes)
 
     if not valid_quizzes:
-        valid_quizzes = DEFAULT_QUIZZES.copy()
+        valid_quizzes = copy.deepcopy(DEFAULT_QUIZZES)
 
     # 최고점 검증
-    if not isinstance(loaded_best_score, int):
+    if not isinstance(loaded_best_score, int) or loaded_best_score < 0:
         loaded_best_score = 0
 
     return {
@@ -153,9 +156,14 @@ def save_state(data):
     3. 프로그램 종료 직전 최종 저장 시
     """
     try:
-        with open(DB_FILE, 'w', encoding='utf-8') as f:
+        # 임시 파일에 먼저 저장한 뒤, 정상 저장되면 실제 파일로 교체한다.
+        # 이렇게 하면 저장 도중 오류가 나도 기존 state.json 손상 가능성을 줄일 수 있다.
+        with open(TEMP_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
+        os.replace(TEMP_FILE, DB_FILE)
+
+        # 정상 저장된 파일을 백업 파일로 복사한다.
         shutil.copy(DB_FILE, BACKUP_FILE)
 
     except Exception as e:
@@ -175,7 +183,9 @@ def load_state():
         try:
             with open(DB_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                return normalize_state(data)
+
+            return normalize_state(data)
+
         except Exception:
             print("메인 파일 손상, 백업 확인 중...")
 
@@ -184,15 +194,27 @@ def load_state():
             with open(BACKUP_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
+            restored_data = normalize_state(data)
+
             shutil.copy(BACKUP_FILE, DB_FILE)
             print("백업 파일에서 데이터를 복구했습니다.")
-            return normalize_state(data)
+
+            return restored_data
 
         except Exception:
             print("백업 파일도 사용할 수 없습니다.")
 
     print("기본 데이터로 시작합니다.")
     return make_default_state()
+
+
+def handle_exit_signal(signum, frame):
+    """
+    Ctrl+C(SIGINT) 같은 종료 신호가 들어오면 KeyboardInterrupt를 발생시킨다.
+    실제 저장은 main()의 finally 구문에서 수행한다.
+    """
+    print("\n종료 신호가 감지되었습니다. 데이터를 저장한 뒤 종료합니다.")
+    raise KeyboardInterrupt
 
 
 def get_current_state():
@@ -206,6 +228,9 @@ def get_current_state():
 
 
 def show_menu():
+    """
+    메인 메뉴를 출력하는 함수
+    """
     print("\n=== 퀴즈 게임 ===")
     print("1. 퀴즈 풀기")
     print("2. 퀴즈 추가")
@@ -215,7 +240,14 @@ def show_menu():
 
 
 def play_quiz():
+    """
+    저장된 퀴즈를 순서대로 풀고 점수를 계산하는 함수
+    """
     global best_score
+
+    if not quizzes:
+        print("등록된 퀴즈가 없습니다.")
+        return
 
     score = 0
 
@@ -223,7 +255,7 @@ def play_quiz():
         print("\n문제:", quiz["question"])
         user_answer = get_non_empty_input("정답: ")
 
-        if user_answer.lower() == quiz["answer"].lower():
+        if user_answer.strip().lower() == quiz["answer"].strip().lower():
             print("정답입니다!")
             score += 1
         else:
@@ -269,6 +301,10 @@ def show_quizzes():
     """
     print("\n=== 퀴즈 목록 ===")
 
+    if not quizzes:
+        print("등록된 퀴즈가 없습니다.")
+        return
+
     for index, quiz in enumerate(quizzes, start=1):
         print(f"{index}. {quiz['question']} / 정답: {quiz['answer']}")
 
@@ -277,6 +313,9 @@ def main():
     global quizzes
     global best_score
 
+    # Ctrl+C 종료 신호 처리 함수 등록
+    signal.signal(signal.SIGINT, handle_exit_signal)
+
     # [로드 시점]
     # 프로그램 시작 직후, 메뉴를 실행하기 전에 저장된 퀴즈 목록과 최고점을 불러온다.
     data = load_state()
@@ -284,26 +323,32 @@ def main():
     quizzes = data["quizzes"]
     best_score = data["best_score"]
 
-    while True:
-        show_menu()
-        choice = get_menu_choice()
+    try:
+        while True:
+            show_menu()
+            choice = get_menu_choice()
 
-        if choice == "1":
-            play_quiz()
+            if choice == "1":
+                play_quiz()
 
-        elif choice == "2":
-            add_quiz()
+            elif choice == "2":
+                add_quiz()
 
-        elif choice == "3":
-            show_quizzes()
+            elif choice == "3":
+                show_quizzes()
 
-        elif choice == "0":
-            # [저장 시점]
-            # 프로그램 종료 직전에 현재 퀴즈 목록과 최고점을 최종 저장한다.
-            save_state(get_current_state())
+            elif choice == "0":
+                print("프로그램을 종료합니다.")
+                break
 
-            print("프로그램을 종료합니다.")
-            break
+    except KeyboardInterrupt:
+        print("\n사용자 요청으로 프로그램을 종료합니다.")
+
+    finally:
+        # [저장 시점]
+        # 정상 종료, Ctrl+C 종료 등 어떤 경우에도 종료 직전에 현재 상태를 최종 저장한다.
+        save_state(get_current_state())
+        print("현재 데이터가 저장되었습니다.")
 
 
 if __name__ == "__main__":

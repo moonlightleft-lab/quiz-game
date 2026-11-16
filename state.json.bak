@@ -19,11 +19,7 @@
         {
             "question": "키와 값으로 데이터를 저장하는 파이썬 자료형은?",
             "answer": "dict"
-        },
-        {
-            "question": "테스트 문제",
-            "answer": "테스트"
         }
     ],
-    "best_score": 3
+    "best_score": 0
 }
