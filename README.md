@@ -179,3 +179,14 @@ ffd25cd Add files via upload
 ## GitHub 커밋 화면
 GitHub 저장소의 Commits 화면에서도 커밋 이력을 확인할 수 있습니다.
 - 커밋 내역 화면: https://github.com/moonlightleft-lab/quiz-game/commits/main
+
+
+
+@"
+# 브랜치 및 병합 기록 증빙
+본 파일은 평가 항목 #6의 브랜치 생성 및 병합 기록을 증빙하기 위해 작성했습니다.
+- 작업 브랜치: evidence-merge
+- 병합 대상 브랜치: main
+- 병합 방식: --no-ff 옵션을 사용한 merge commit 생성
+- 확인 명령어: git log --graph --oneline --decorate --all -20
+"@ | Set-Content -Encoding UTF8 MERGE_EVIDENCE.md
