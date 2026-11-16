@@ -32,6 +32,11 @@ DEFAULT_QUIZZES = [
 ]
 
 
+# 전역 상태 변수
+quizzes = []
+best_score = 0
+
+
 def get_non_empty_input(prompt):
     """
     빈 입력을 막기 위한 입력 검증 함수
@@ -141,6 +146,11 @@ def save_state(data):
     """
     현재 퀴즈 목록과 최고점을 state.json에 저장한다.
     저장 후 백업 파일도 생성한다.
+
+    호출 시점:
+    1. 새 퀴즈가 추가되어 데이터가 변경된 직후
+    2. 퀴즈 풀이 후 최고점이 변경된 직후
+    3. 프로그램 종료 직전 최종 저장 시
     """
     try:
         with open(DB_FILE, 'w', encoding='utf-8') as f:
@@ -154,9 +164,12 @@ def save_state(data):
 
 def load_state():
     """
-    프로그램 시작 시 state.json을 불러온다.
-    state.json이 손상되었으면 백업 파일을 확인한다.
-    둘 다 없거나 손상되었으면 기본 데이터를 사용한다.
+    프로그램 시작 직후 1회 호출된다.
+    state.json에서 저장된 퀴즈 목록과 최고점을 불러온다.
+    state.json이 없거나 손상된 경우 기본 데이터를 사용한다.
+
+    호출 시점:
+    - main() 함수 시작 부분에서 메뉴 실행 전에 호출된다.
     """
     if os.path.exists(DB_FILE):
         try:
@@ -214,22 +227,25 @@ def play_quiz():
             print("정답입니다!")
             score += 1
         else:
-            print("틀렸습니다.")
-            print("정답은", quiz["answer"], "입니다.")
+            print(f"오답입니다. 정답은 {quiz['answer']}입니다.")
 
-    print("\n최종 점수:", score, "/", len(quizzes))
+    print(f"\n이번 점수: {score} / {len(quizzes)}")
 
     if score > best_score:
         best_score = score
-        print("새로운 최고점입니다!")
-    else:
-        print("최고점:", best_score)
+        print("최고점이 갱신되었습니다!")
 
-    # 저장 시점 1: 퀴즈 풀이 후 최고점이 바뀔 수 있으므로 저장
-    save_state(get_current_state())
+        # [저장 시점]
+        # 퀴즈 풀이 후 최고점이 변경되었으므로 변경된 점수를 즉시 저장한다.
+        save_state(get_current_state())
+    else:
+        print("최고점은 변경되지 않았습니다.")
 
 
 def add_quiz():
+    """
+    새 퀴즈를 추가하는 함수
+    """
     question = get_non_empty_input("추가할 문제를 입력하세요: ")
     answer = get_non_empty_input("정답을 입력하세요: ")
 
@@ -239,49 +255,56 @@ def add_quiz():
     }
 
     quizzes.append(new_quiz)
-    print("퀴즈가 추가되었습니다.")
 
-    # 저장 시점 2: 퀴즈 목록이 변경되었으므로 즉시 저장
+    # [저장 시점]
+    # 새 퀴즈가 추가되어 퀴즈 목록 데이터가 변경되었으므로 즉시 저장한다.
     save_state(get_current_state())
 
+    print("퀴즈가 추가되었습니다.")
 
-def show_quiz_list():
+
+def show_quizzes():
+    """
+    현재 퀴즈 목록을 보여주는 함수
+    """
     print("\n=== 퀴즈 목록 ===")
 
     for index, quiz in enumerate(quizzes, start=1):
-        print(index, ".", quiz["question"])
+        print(f"{index}. {quiz['question']} / 정답: {quiz['answer']}")
 
 
-# ==============================
-# 프로그램 시작 시점
-# 저장된 state.json을 먼저 불러온다.
-# 저장된 퀴즈가 5개 미만이면 기본 퀴즈를 보충한다.
-# ==============================
-state = load_state()
-quizzes = state["quizzes"]
-best_score = state["best_score"]
+def main():
+    global quizzes
+    global best_score
 
-# 시작 시 로드/보정된 상태를 저장한다.
-# 기존 state.json에 퀴즈가 2개뿐이어도 실행 후 최소 5개 이상으로 저장된다.
-save_state(get_current_state())
+    # [로드 시점]
+    # 프로그램 시작 직후, 메뉴를 실행하기 전에 저장된 퀴즈 목록과 최고점을 불러온다.
+    data = load_state()
+
+    quizzes = data["quizzes"]
+    best_score = data["best_score"]
+
+    while True:
+        show_menu()
+        choice = get_menu_choice()
+
+        if choice == "1":
+            play_quiz()
+
+        elif choice == "2":
+            add_quiz()
+
+        elif choice == "3":
+            show_quizzes()
+
+        elif choice == "0":
+            # [저장 시점]
+            # 프로그램 종료 직전에 현재 퀴즈 목록과 최고점을 최종 저장한다.
+            save_state(get_current_state())
+
+            print("프로그램을 종료합니다.")
+            break
 
 
-while True:
-    show_menu()
-
-    choice = get_menu_choice()
-
-    if choice == "1":
-        play_quiz()
-
-    elif choice == "2":
-        add_quiz()
-
-    elif choice == "3":
-        show_quiz_list()
-
-    elif choice == "0":
-        # 저장 시점 3: 프로그램 종료 전에 현재 상태 저장
-        save_state(get_current_state())
-        print("게임을 종료합니다.")
-        break
+if __name__ == "__main__":
+    main()

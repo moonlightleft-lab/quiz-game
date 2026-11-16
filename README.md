@@ -198,3 +198,42 @@ GitHub 저장소의 Commits 화면에서도 커밋 이력을 확인할 수 있�
 - 병합 방식: --no-ff 옵션을 사용한 merge commit 생성
 - 확인 명령어: git log --graph --oneline --decorate --all -20
 "@ | Set-Content -Encoding UTF8 MERGE_EVIDENCE.md
+
+
+
+# 파일 입출력 함수 호출 시점 문서화
+이 프로그램은 `load_state()`와 `save_state(data)`를 사용하여 퀴즈 데이터와 점수 상태를 파일로 저장하고 불러옵니다.
+## load_state / save_state 호출 시점
+| 함수명 | 호출 시점 | 역할 |
+|---|---|---|
+| `load_state()` | 프로그램 시작 직후 1회 호출 | 저장된 퀴즈 데이터와 점수 정보를 파일에서 불러옴 |
+| `save_state(data)` | 퀴즈 추가 후 | 새로 추가된 퀴즈 정보를 파일에 저장 |
+| `save_state(data)` | 퀴즈 풀이 후 점수 변경 시 | 변경된 점수 정보를 파일에 저장 |
+| `save_state(data)` | 프로그램 종료 직전 | 현재 상태를 최종 저장 |
+## 프로그램 시작/종료 흐름에서의 호출 순서
+1. 프로그램 시작
+2. `load_state()` 호출
+3. 저장된 데이터가 있으면 불러오기
+4. 사용자 메뉴 실행
+5. 퀴즈 추가 또는 점수 변경 시 `save_state(data)` 호출
+6. 종료 선택 시 `save_state(data)` 최종 호출
+7. 프로그램 종료
+## 프로그램 흐름도
+```mermaid
+flowchart TD
+    A[프로그램 시작] --> B[load_state() 호출]
+    B --> C[저장된 퀴즈/점수 데이터 불러오기]
+    C --> D[메뉴 출력]
+    D --> E{사용자 선택}
+
+    E -->|퀴즈 풀기| F[점수 변경]
+    F --> G[save_state(data) 호출]
+    G --> D
+
+    E -->|퀴즈 추가| H[퀴즈 데이터 변경]
+    H --> I[save_state(data) 호출]
+    I --> D
+
+    E -->|종료| J[save_state(data) 최종 호출]
+    J --> K[프로그램 종료]
+```
